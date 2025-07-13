@@ -1,28 +1,48 @@
 # Pipelined Parametrized Matrix Multiplier
 
-This project implements a pipelined and parameterized 3x3 matrix multiplier in Verilog, optimized for FPGA synthesis. The design demonstrates pipelining at both the dot product and matrix levels for efficient throughput and modularity.
+This project implements a pipelined 3x3 matrix multiplier in Verilog. The design is optimized for simulation and synthesis through a modular and step-by-step structure. The final version is flattened for synthesis tools like Vivado that don't support array ports.
 
-## Features
-- Fully pipelined MAC (Multiply-Accumulate) chain using `mulnaccum`
-- Modular dot product using `dot_product_pipelined`
-- Parameterized matrix multiplier (`N` and `BitWidth`)
-- Scalable for larger matrix sizes
-- Clean testbenches for each module
+## Overview
 
-## Files Included
-- `Final-design.v` – Contains all modules in a single file
-- `dot_product_pipelined_design.v` / `dot_product_pipelined_testbench.v`
-- `matrix_multiplication.v` / `matrix_multiplication_tb.v`
-- `basic_design.v` / `basic_testbench.v`
-- `final_tesbench.v` – Final testbench for top-level integration
+The matrix multiplier is built from the ground up:
+1. A basic, unpipelined design
+2. A pipelined, parameterized version using arrays
+3. A fully flattened version for synthesis with waveform verification
 
-## Simulation
-Use a simulator like **Icarus Verilog** or Vivado to run the testbench:
+Each version is placed in its own folder with both design and testbench files.
+
+## Structure
+
+### Final Design after parametrization
+- Fully pipelined and parameterized version (`N=3`, `BitWidth=8`)
+- Uses array-style ports like `a[0:2]`, `b[0:2]`
+- Simulation-friendly but not directly synthesizable on Vivado
+
+### Final Design after flattening
+- Flattened version with scalar ports like `A00`, `A01`, ..., `C22`
+- Compatible with synthesis tools (Vivado, etc.)
+- Includes:
+  - `Final-design.v` (flattened design)
+  - `final_testbench.v`
+  - `wave.vcd` (for waveform analysis)
+
+### Other folders
+- `basic_design/`: Initial non-pipelined version
+- `dot_product_pipelined/`: Individual pipelined dot product module and testbench
+- `matrix_multiplication/`: Parameterized matrix-level pipelined design
+
+## How to Simulate
+
+To simulate the **flattened version**:
+
 ```bash
-iverilog -o sim.out matrix_multiplication.v matrix_multiplication_tb.v
+iverilog -o sim.out "Final Design after flattening/Final-design.v" "Final Design after flattening/final_testbench.v"
 vvp sim.out
 
-## Synthesis Notes
-Array ports like `a[0:2]` and `b[0:2]` work fine for simulation,  
-but **for synthesis (Vivado etc.), you'll need to flatten them** into separate wires.  
-A flattened version is already included in this repo.
+You can view the output waveform using GTKWave: gtkwave wave.vcd
+
+Synthesis Notes
+Array ports (a[0:2], b[0:2], etc.) used in the parameterized version work fine for simulation but are not supported by synthesis tools like Vivado. That’s why a flattened version is included.
+
+If you want to scale this to larger matrix sizes, you’ll need to regenerate the flattened version accordingly.
+
